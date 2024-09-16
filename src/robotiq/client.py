@@ -58,9 +58,7 @@ class RobotiqClient(Client):
         )
 
     def connect(self) -> bool:
-        if self._client.connect():
-            self._connected = True
-
+        self._connected = self._client.connect()
         print(f"[CLIENT CONNECTION] Status is {self._connected}")
         return self._connected
 
@@ -70,6 +68,7 @@ class RobotiqClient(Client):
             return
 
         self._client.close()
+        self._connected = False
 
     def send(self, command) -> bool:
         if command is None:
@@ -99,6 +98,7 @@ class RobotiqClient(Client):
             return True
         except ModbusException as e:
             print(f"[CLIENT ERROR] ModbusException on Send -> {e}")
+            self._connected = False
             return False
 
     def status(self, num_bytes) -> list:
@@ -124,6 +124,7 @@ class RobotiqClient(Client):
             )
         except ModbusException as e:
             print(f"[CLIENT ERROR] ModbusException on Status Read -> {e}")
+            self._connected = False
             return list()
 
         # Setup output and fill with bytes in correct order
