@@ -55,6 +55,9 @@ class GrasshopperInterface(Interface):
         print(f"[INTERFACE] Reached end of Setup")
 
     async def _interface_handler(self, websocket):
+        """This is the main interface input/output method
+        Expected to be run in a Thread
+        """
         print(f"[INTERFACE] WebSocket Interface Initialising")
         # Initialising requires getting the grippers status
         # gripper_status = self._output_q.get()

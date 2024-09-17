@@ -70,7 +70,7 @@ class GripperHandler:
                         # A command was received from interface, parse and send to gripper
                         # Get the gripper status here, we can send this back to the main thread for parsing
                         # Generate the command to send to the gripper and send said command (now in main thread)
-                        gripper_command = self._interpreter.generate(interface_data[key])
+                        gripper_command = self._interpreter.generate_output(interface_data[key])
                         self._client.send(gripper_command)
                     else:
                         print(f"[GRIPPER ERROR] Unknown Interface State {key}")

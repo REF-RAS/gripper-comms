@@ -35,9 +35,10 @@
 # Revision $Id$
 #
 # Modifed from the orginal comModbusTcp by Kelsey Hawkins @ Georgia Tech
-# Modifed from the orginal comModbusTcp by Dasun Gunasinghe (Adaptation to Generic Class Model)
+# Modifed from the orginal by Dasun Gunasinghe (Adaptation to Generic Class Model)
 
-from base.client import Client
+from base.client import Client, Interpreter
+from grippers.robotiq.msg import InputMsg, OutputMsg
 from pymodbus.client import ModbusSerialClient
 from pymodbus import ModbusException
 from math import ceil
@@ -102,7 +103,9 @@ class RobotiqClient(Client):
             self._connected = False
             return False
 
-    def status(self, num_bytes: int = 0) -> list:
+    def get_status(self, num_bytes: int = 0) -> list:
+        """Gets the status from a connected Robotiq Gripper 
+        """
         if num_bytes is None or num_bytes <= 0:
             print(f"[CLIENT ERROR] Cannot get status as num_bytes is invalid -> {num_bytes}")
             return [] 
@@ -137,3 +140,126 @@ class RobotiqClient(Client):
 
         # Output the result
         return output
+
+class RobotiqInterpreter(Interpreter):
+    def __init__(self):
+        super().__init__()
+        print(f"[INTERPRETER] Robotiq Type Instantiated")
+
+    def verify_output(self, command: OutputMsg) -> OutputMsg:
+        """Confirms if the output message is within required bounds
+        """
+        if not isinstance(command, OutputMsg):
+            print(f"[INTERPRETER ERROR] Cannot verify unknown type -> {command}. Expecting type {type(OutputMsg)}")
+            return None
+
+        # Verify if each variable is in the correct range
+        command.rACT = max(0, command.rACT)
+        command.rACT = min(1, command.rACT)
+
+        command.rGTO = max(0, command.rGTO)
+        command.rGTO = min(1, command.rGTO)
+
+        command.rATR = max(0, command.rATR)
+        command.rATR = min(1, command.rATR)
+
+        command.rPR  = max(0,   command.rPR)
+        command.rPR  = min(255, command.rPR)    
+
+        command.rSP  = max(0,   command.rSP)
+        command.rSP  = min(255, command.rSP)    
+
+        command.rFR  = max(0,   command.rFR)
+        command.rFR  = min(255, command.rFR) 
+
+        # Return the verified command
+        return command 
+
+    def refresh_output(self, command: OutputMsg) -> list:
+        """Refreshes/prepares output message into required type for sending 
+        """
+        if not isinstance(command, OutputMsg):
+            print(f"[INTERPRETER ERROR] Cannot refresh command as it is incorrect type {type(command)}")
+            return []
+
+        # Limit the value of each variable
+        command = self.verify_output(command)
+
+        # Create message list from verified command
+        message: list = []
+        message.append(command.rACT + (command.rGTO << 3) + (command.rATR << 4))
+        message.append(0)
+        message.append(0)
+        message.append(command.rPR)
+        message.append(command.rSP)
+        message.append(command.rFR)  
+
+        return message
+
+    def interpret_input(self, value: list = []) -> InputMsg:
+        message = InputMsg()
+        if value is None or value == list():
+            print(f"[INTERPRETER ERROR] Client Message is Empty")
+            return message
+
+        message.gACT = (value[0] >> 0) & 0x01
+        message.gGTO = (value[0] >> 3) & 0x01
+        message.gSTA = (value[0] >> 4) & 0x03
+        message.gOBJ = (value[0] >> 6) & 0x03
+        message.gFLT =  value[2]
+        message.gPR  =  value[3]
+        message.gPO  =  value[4]
+        message.gCU  =  value[5]
+
+        return message
+
+    def generate_output(self, value) -> list:
+        # The following is existing functionality
+        command = OutputMsg()
+        if value == 'a':
+            command.rACT = 1
+            command.rGTO = 1
+            command.rSP  = 255
+            command.rFR  = 150
+        elif value == 'r':
+            command.rACT = 0
+
+        if value == 'c':
+            command.rPR = 255
+
+        if value == 'o':
+            command.rPR = 0   
+
+        #If the command entered is a int, assign this value to rPRA
+        if isinstance(value, int):
+            command.rPR = int(value)
+            # Clamping behaviour
+            if command.rPR > 255:
+                command.rPR = 255
+            if command.rPR < 0:
+                command.rPR = 0
+            
+        if value == 'f':
+            command.rSP += 25
+            if command.rSP > 255:
+                command.rSP = 255
+                
+        if value == 'l':
+            command.rSP -= 25
+            if command.rSP < 0:
+                command.rSP = 0
+
+        if value == 'i':
+            command.rFR += 25
+            if command.rFR > 255:
+                command.rFR = 255
+                
+        if value == 'd':
+            command.rFR -= 25
+            if command.rFR < 0:
+                command.rFR = 0
+
+        output = self.refresh_output(command)
+        return output
+
+

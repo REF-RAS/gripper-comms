@@ -38,7 +38,30 @@ class Client(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def status(self) -> T:
+    def get_status(self) -> T:
         """Return the status from client
+        """
+        pass
+
+T = TypeVar("T")
+class Interpreter(ABC, Generic[T]):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def verify_output(self, command: T) -> T:
+        """Verifies a given output command based on a known interpreter
+        """
+        pass
+
+    @abstractmethod
+    def generate_output(self, command: T) -> T:
+        """Generates an output command to be sent in known message format 
+        """
+        pass
+
+    @abstractmethod
+    def interpret_input(self, command: T) -> T:
+        """Interprets an input and outputs in known message format 
         """
         pass
