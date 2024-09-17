@@ -41,6 +41,7 @@ from robotiq.msg import InputMsg, OutputMsg
 class RobotiqInterpreter(Interpreter):
     def __init__(self):
         super().__init__()
+        print(f"[INTERPRETER] Robotiq Type Instantiated")
 
     def verify(self, command: OutputMsg) -> OutputMsg:
         if not isinstance(command, OutputMsg):
@@ -69,7 +70,11 @@ class RobotiqInterpreter(Interpreter):
         # Return the verified command
         return command 
 
-    def refresh(self, command: OutputMsg) -> OutputMsg:
+    def refresh(self, command: OutputMsg) -> list:
+        if not isinstance(command, OutputMsg):
+            print(f"[INTERPRETER ERROR] Cannot refresh command as it is incorrect type {type(command)}")
+            return []
+
         # Limit the value of each variable
         command = self.verify(command)
 
@@ -83,3 +88,70 @@ class RobotiqInterpreter(Interpreter):
         message.append(command.rFR)  
 
         return message
+
+    def interpret(self, value: list = []) -> InputMsg:
+        message = InputMsg()
+        if value is None or value == list():
+            print(f"[INTERPRETER ERROR] Client Message is Empty")
+            return message
+
+        message.gACT = (value[0] >> 0) & 0x01
+        message.gGTO = (value[0] >> 3) & 0x01
+        message.gSTA = (value[0] >> 4) & 0x03
+        message.gOBJ = (value[0] >> 6) & 0x03
+        message.gFLT =  value[2]
+        message.gPR  =  value[3]
+        message.gPO  =  value[4]
+        message.gCU  =  value[5]
+
+        return message
+
+    def generate(self, value) -> OutputMsg:
+        # The following is existing functionality
+        command = OutputMsg()
+        if value == 'a':
+            command.rACT = 1
+            command.rGTO = 1
+            command.rSP  = 255
+            command.rFR  = 150
+        elif value == 'r':
+            command.rACT = 0
+
+        if value == 'c':
+            command.rPR = 255
+
+        if value == 'o':
+            command.rPR = 0   
+
+        #If the command entered is a int, assign this value to rPRA
+        if isinstance(value, int):
+            command.rPR = int(value)
+            # Clamping behaviour
+            if command.rPR > 255:
+                command.rPR = 255
+            if command.rPR < 0:
+                command.rPR = 0
+            
+        if value == 'f':
+            command.rSP += 25
+            if command.rSP > 255:
+                command.rSP = 255
+                
+        if value == 'l':
+            command.rSP -= 25
+            if command.rSP < 0:
+                command.rSP = 0
+
+        if value == 'i':
+            command.rFR += 25
+            if command.rFR > 255:
+                command.rFR = 255
+                
+        if value == 'd':
+            command.rFR -= 25
+            if command.rFR < 0:
+                command.rFR = 0
+
+        return command
+
+

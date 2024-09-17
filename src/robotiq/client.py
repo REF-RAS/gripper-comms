@@ -47,6 +47,7 @@ class RobotiqClient(Client):
         """Robotiq Client Initialiser
         """
         super().__init__()
+        print(f"[CLIENT] Robotiq Type Instantiated")
         # TODO: config read in to get these params
         self._client = ModbusSerialClient(
             method='rtu',
@@ -101,7 +102,7 @@ class RobotiqClient(Client):
             self._connected = False
             return False
 
-    def status(self, num_bytes) -> list:
+    def status(self, num_bytes: int = 0) -> list:
         if num_bytes is None or num_bytes <= 0:
             print(f"[CLIENT ERROR] Cannot get status as num_bytes is invalid -> {num_bytes}")
             return [] 
