@@ -5,7 +5,7 @@ import os
 from threading import Thread
 from queue import Queue, Empty
 from base.interface import Interface 
-from robotiq.msg import InputMsg
+from grippers.robotiq.msg import InputMsg
 
 class GrasshopperInterface(Interface):
     def __init__(self, input_q: Queue, output_q: Queue, run_control_method, connection_check_method, port: int = 8001):

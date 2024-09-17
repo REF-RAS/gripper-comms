@@ -36,7 +36,7 @@
 # Modifed from the orginal by Dasun Gunasinghe (Adaptation to Generic Class Model)
 
 from base.interpreter import Interpreter 
-from robotiq.msg import InputMsg, OutputMsg
+from grippers.robotiq.msg import InputMsg, OutputMsg
 
 class RobotiqInterpreter(Interpreter):
     def __init__(self):

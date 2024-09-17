@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -- Robotiq specific
-from robotiq.interpreter import RobotiqInterpreter
-from robotiq.client import RobotiqClient
-from robotiq.interface import GrasshopperInterface
+from grippers.robotiq.interpreter import RobotiqInterpreter
+from grippers.robotiq.client import RobotiqClient
+from grippers.robotiq.interface import GrasshopperInterface
 # -- Base
 from base.interface import Interface 
 from base.interpreter import Interpreter
