@@ -106,7 +106,7 @@ class RobotiqInterpreter(Interpreter):
 
         return message
 
-    def generate(self, value) -> OutputMsg:
+    def generate(self, value) -> list:
         # The following is existing functionality
         command = OutputMsg()
         if value == 'a':
@@ -152,6 +152,7 @@ class RobotiqInterpreter(Interpreter):
             if command.rFR < 0:
                 command.rFR = 0
 
-        return command
+        output = self.refresh(command)
+        return output
 
 

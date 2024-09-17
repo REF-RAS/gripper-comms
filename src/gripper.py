@@ -3,19 +3,20 @@ from base import *
 from grippers import *
 from threading import Thread, Lock
 from queue import Queue
-import time
+import time, yaml, os, importlib
+
+# Set the path to be the root of this package
+__path__ = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 # NOTE: this should be a generic class that is configured for a particular interpreter and client from config
 class GripperHandler:
     def __init__(self):
+        """Constructor
+        """
         # -- Prepare main object varibales for use
         # These are parsed in object types for instantiation
         self._interpreter: Interpreter = None
         self._client: Client = None
-        self._interface: Interface = None
-        # These are the instantiated object handlers
-        self._client_handler = None
-        self._interpreter_handler = None
         # Prepare comms between threads
         self._input_q: Queue = Queue()
         self._output_q: Queue = Queue()
@@ -23,9 +24,11 @@ class GripperHandler:
         # This will be updated to control thread for websocket
         self._interface_run: bool = True 
         self._interface_connection: bool = False
-        self._interface_thread = None
+        self._interface_thread: Thread = None
 
     def __del__(self):
+        """Destructor
+        """
         self._stop_threads()
 
     # -- Private Methods (or abstraction methods)
@@ -42,18 +45,15 @@ class GripperHandler:
             self._interface_connection = value
 
     def _stop_threads(self):
+        """Stops any running threads
+        """
         print(f"[GRIPPER] Stopping Threads")
-        self._web_socket_run = False
         if self._interface_thread is not None and self._interface_thread.is_alive():
             print(f"[GRIPPER] Stopping {self._interface_thread.name}")
             self._interface_thread.join(1)
 
     # -- Public Methods
     def run(self):
-        # Main thread operation
-        # - Get messages from the interface thread 
-        #   this may be commands from the interface (for action)
-        #   or it could be state changing information (i.e. close of socket)
         while True:
             try:
                 # Blocking wait for interface data
@@ -70,9 +70,8 @@ class GripperHandler:
                         # A command was received from interface, parse and send to gripper
                         # Get the gripper status here, we can send this back to the main thread for parsing
                         # Generate the command to send to the gripper and send said command (now in main thread)
-                        gripper_command = self._interpreter_handler.generate(interface_data[key])
-                        prepared_gripper_command = self._interpreter_handler.refresh(gripper_command)
-                        self._client_handler.send(prepared_gripper_command)
+                        gripper_command = self._interpreter.generate(interface_data[key])
+                        self._client.send(gripper_command)
                     else:
                         print(f"[GRIPPER ERROR] Unknown Interface State {key}")
 
@@ -82,22 +81,22 @@ class GripperHandler:
 
         self._stop_threads()
 
-    def setup(self):
-        if self._interface is None:
-            print(f"[GRIPPER ERROR] Interface not defined {self._interface}")
-            return
+    def create(self):
+        # Read config and extract names
+        with open(__path__ + "/config/gripper.yaml", 'r') as f:
+            config = yaml.safe_load(f)
+        
+        # The main module for all object creators
+        module = importlib.import_module('grippers')
 
-        if self._interpreter is None:
-            print(f"[GRIPPER ERROR] Interpreter not defined")
-            return
-
-        if self._client is None:
-            print(f"[GRIPPER ERROR] Client not defined")
-            return
+        # Create the interpreter for the gripper client comms
+        self._interpreter = getattr(module, config['interpreter'])()
+        # Create the client for the gripper (comms to gripper)
+        self._client = getattr(module, config['client'])()
 
         # Create the control interface and start its thread
         self._interface_thread = Thread(
-            target=self._interface, 
+            target=getattr(module, config['interface']), 
             args=(
                 self._input_q,
                 self._output_q,
@@ -109,13 +108,9 @@ class GripperHandler:
         self._interface_thread.start()
         self._interface_thread.name = "Thread-Control-Interface"
 
-        # Create the interpreter for the gripper client comms
-        self._interpreter_handler = self._interpreter()
-
-        # Create the client for the gripper (comms to gripper)
-        self._client_handler = self._client()
+    def setup(self):
         # TODO: test connection
-        self._client_handler.connect()
+        self._client.connect()
 
         # Setup any initialisation in the interface
         self._interface_init()
@@ -131,35 +126,6 @@ class GripperHandler:
         # self._output_q.put(interpreted_gripper_status)
         pass
 
-    @property
-    def interface(self):
-        """The interface property."""
-        return self._interface
-
-    @interface.setter
-    def interface(self, value: Interface):
-        self._interface = value
-
-    @property
-    def interpreter(self):
-        """The interpreter property.
-        """
-        return self._interpreter
-
-    @interpreter.setter
-    def interpreter(self, value: Interpreter):
-        self._interpreter = value
-
-    @property
-    def client(self):
-        """The _client property.
-        """
-        return self._client
-
-    @client.setter
-    def client(self, value: Client):
-        self._client = value
-
 if __name__ == "__main__":
     # EXPECTED FUNCTIONALITY
     # On run, should instantiate gripper type based on config read
@@ -169,10 +135,11 @@ if __name__ == "__main__":
     # TODO: add any argument parsing if needed
     # Setup the gripper and Object types 
     gripper = GripperHandler()
+    gripper.create()
     # TODO: implement factory read here for these types
-    gripper.interpreter = RobotiqInterpreter
-    gripper.client = RobotiqClient
-    gripper.interface = GrasshopperInterface
+    # gripper.interpreter = RobotiqInterpreter
+    # gripper.client = RobotiqClient
+    # gripper.interface = GrasshopperInterface
     
     # Setup the Gripper
     gripper.setup()

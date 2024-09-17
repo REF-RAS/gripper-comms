@@ -4,11 +4,20 @@ import websockets
 import os
 from threading import Thread
 from queue import Queue, Empty
+from typing import Callable 
 from base.interface import Interface 
 from grippers.robotiq.msg import InputMsg
 
 class GrasshopperInterface(Interface):
-    def __init__(self, input_q: Queue, output_q: Queue, run_control_method, connection_check_method, port: int = 8001):
+    def __init__(
+            self,  
+            input_q: Queue, 
+            output_q: Queue, 
+            run_control_method: Callable, 
+            connection_check_method: Callable, 
+            port: int = 8001
+        ):
+        print(f"[INTERFACE] Grasshopper Type Instantiated")
         super().__init__(
             input_q=input_q,
             output_q=output_q,
