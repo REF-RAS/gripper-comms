@@ -9,11 +9,12 @@ from grippers.robotiq.msg import InputMsg
 
 class GrasshopperInterface(Interface):
     def __init__(self, input_q: Queue, output_q: Queue, run_control_method, connection_check_method, port: int = 8001):
-        super().__init__()
-        self._input_q: Queue = input_q 
-        self._output_q: Queue = output_q 
-        self._run_control_method = run_control_method
-        self._connection_check_method = connection_check_method
+        super().__init__(
+            input_q=input_q,
+            output_q=output_q,
+            run_control_method=run_control_method, 
+            connection_check_method=connection_check_method
+        )
         self._port = port
         self._loop = None
 
@@ -47,13 +48,12 @@ class GrasshopperInterface(Interface):
     async def _interface_handler(self, websocket):
         print(f"[INTERFACE] WebSocket Interface Initialising")
         # Initialising requires getting the grippers status
-        gripper_status = self._output_q.get()
-        if isinstance(gripper_status, InputMsg):
-            prev_msg = int(gripper_status.gPO)
-        else:
-            prev_msg = 0
-
-        print(f"[INTERFACE] Gripper status is: {gripper_status} | prev_msg is {prev_msg}")
+        # gripper_status = self._output_q.get()
+        # if isinstance(gripper_status, InputMsg):
+            # prev_msg = int(gripper_status.gPO)
+        # else:
+            # prev_msg = 0
+        # print(f"[INTERFACE] Gripper status is: {gripper_status} | prev_msg is {prev_msg}")
         self_termination: bool = False
         # Loop functionality under main thread control
         print(f"[INTERFACE] Run control method: {self._run_control_method()}")

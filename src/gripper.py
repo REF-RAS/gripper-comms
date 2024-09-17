@@ -1,15 +1,9 @@
 #!/usr/bin/env python
-# -- Robotiq specific
-from grippers.robotiq.interpreter import RobotiqInterpreter
-from grippers.robotiq.client import RobotiqClient
-from grippers.robotiq.interface import GrasshopperInterface
-# -- Base
-from base.interface import Interface 
-from base.interpreter import Interpreter
-from base.client import Client 
-import time
+from base import *
+from grippers import *
 from threading import Thread, Lock
 from queue import Queue
+import time
 
 # NOTE: this should be a generic class that is configured for a particular interpreter and client from config
 class GripperHandler:
@@ -130,12 +124,12 @@ class GripperHandler:
         # NOTE: This may be custom based on type of gripper
         # -- Send the status of the gripper
         # Get the gripper's status via the gripper client
-        gripper_status = self._client_handler.status()
+        # gripper_status = self._client_handler.status()
         # Interpret message into required format for usage in interface
-        interpreted_gripper_status = self._interpreter_handler.interpret(gripper_status)
+        # interpreted_gripper_status = self._interpreter_handler.interpret(gripper_status)
         # Put the interpreted_gripper_status into the interface thread for usage
-        self._output_q.put(interpreted_gripper_status)
-
+        # self._output_q.put(interpreted_gripper_status)
+        pass
 
     @property
     def interface(self):
@@ -175,7 +169,7 @@ if __name__ == "__main__":
     # TODO: add any argument parsing if needed
     # Setup the gripper and Object types 
     gripper = GripperHandler()
-    # TODO: implement configuration read here for these types
+    # TODO: implement factory read here for these types
     gripper.interpreter = RobotiqInterpreter
     gripper.client = RobotiqClient
     gripper.interface = GrasshopperInterface
