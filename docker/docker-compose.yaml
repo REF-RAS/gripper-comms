@@ -1,0 +1,17 @@
+services:
+  gripper-comms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER: ${USER}
+    image: gripper-comms
+    container_name: docker-gripper-comms
+    stdin_open: true
+    tty: true
+    privileged: true
+    network_mode: host
+    command: python3 src/gripper.py
+    volumes:
+      - ../src:/home/${USER}/src:rw
+      - ../config:/home/${USER}/config:rw

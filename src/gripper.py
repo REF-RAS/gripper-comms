@@ -44,6 +44,13 @@ class GripperHandler:
         with self._lock:
             self._interface_connection = value
 
+    def _client_connection_check(self): 
+        # attempt to connect to client
+        # If client is connected, update main thread
+        # If the client is disconnected, update main thread 
+        # Handle loop of 1 second (on checks)
+        pass
+
     def _stop_threads(self):
         """Stops any running threads
         """
@@ -68,7 +75,9 @@ class GripperHandler:
                         self._interface_init()
                     elif key == 'command':
                         # A command was received from interface, parse and send to gripper
-                        # Get the gripper status here, we can send this back to the main thread for parsing
+                        # Get the gripper status here, we can send this back to the interface thread if required
+                        self._client.get_status()
+                        # TODO: based on status, attempt connection if not connected
                         # Generate the command to send to the gripper and send said command (now in main thread)
                         gripper_command = self._interpreter.generate_output(interface_data[key])
                         self._client.send(gripper_command)

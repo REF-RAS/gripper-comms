@@ -51,7 +51,7 @@ class RobotiqClient(Client):
         print(f"[CLIENT] Robotiq Type Instantiated")
         # TODO: config read in to get these params
         self._client = ModbusSerialClient(
-            method='rtu',
+            framer='rtu',
             port='COM4',
             stopbits=1,
             bytesize=8,
