@@ -76,14 +76,9 @@ class GripperHandler:
                     elif key == 'command':
                         # check if the gripper is connected or not prior to proceeding
                         if not self._client._connected:
-                            # Attempt connection
-                            # self._client.connect()
                             # Reset Procedure
                             self.setup()
                         # A command was received from interface, parse and send to gripper
-                        # Get the gripper status here, we can send this back to the interface thread if required
-                        self._client.get_status()
-                        # TODO: based on status, attempt connection if not connected
                         # Generate the command to send to the gripper and send said command (now in main thread)
                         gripper_command = self._interpreter.generate_output(interface_data[key])
                         self._client.send(gripper_command)
@@ -126,8 +121,7 @@ class GripperHandler:
     def setup(self):
         # TODO: test connection
         self._client.connect()
-        
-        # self._client.get_status()
+        print(f"[GRIPPER] Initialising...")
         self._client.send(self._interpreter.generate_output('r'))
         time.sleep(1)
         self._client.send(self._interpreter.generate_output('a'))

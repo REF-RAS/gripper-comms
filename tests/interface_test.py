@@ -9,7 +9,7 @@ async def test_client():
     async with websockets.connect(url) as ws:
         msg = 0
         await ws.send(f"{msg}")
-        # time.sleep(2)
+        time.sleep(2)
         msg = 255
         await ws.send(f"{msg}")
 
