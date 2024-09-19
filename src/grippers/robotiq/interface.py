@@ -59,13 +59,6 @@ class GrasshopperInterface(Interface):
         Expected to be run in a Thread
         """
         print(f"[INTERFACE] WebSocket Interface Initialising")
-        # Initialising requires getting the grippers status
-        # gripper_status = self._output_q.get()
-        # if isinstance(gripper_status, InputMsg):
-            # prev_msg = int(gripper_status.gPO)
-        # else:
-            # prev_msg = 0
-        # print(f"[INTERFACE] Gripper status is: {gripper_status} | prev_msg is {prev_msg}")
         self_termination: bool = False
         # Loop functionality under main thread control
         print(f"[INTERFACE] Run control method: {self._run_control_method()}")
@@ -74,12 +67,7 @@ class GrasshopperInterface(Interface):
             try:
                 message = await websocket.recv()
                 print(f"[INTERFACE] Received: {message}")
-                # TODO: Verify this from the current functionality
-                # if len(message) > 0 and abs(int(message) - prev_msg) > 5:
-                # Send message in a dict for easy interpretation
                 self._input_q.put({'command': message})
-                # TODO: Verify this from the current functionality
-                # prev_msg = int(message)
             except websockets.ConnectionClosedOK:
                 self_termination = True
                 break

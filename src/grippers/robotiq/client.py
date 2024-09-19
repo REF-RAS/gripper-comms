@@ -44,10 +44,10 @@ from pymodbus import ModbusException
 from math import ceil
 
 class RobotiqClient(Client):
-    def __init__(self):
+    def __init__(self, interpreter: Interpreter):
         """Robotiq Client Initialiser
         """
-        super().__init__()
+        super().__init__(interpreter=interpreter)
         print(f"[CLIENT] Robotiq Type Instantiated")
         # TODO: config read in to get these params
         self._client = ModbusSerialClient(
@@ -58,6 +58,27 @@ class RobotiqClient(Client):
             baudrate=115200,
             timeout=0.5,        
         )
+
+    def setup(self) -> bool:
+        """Conducts required setup for the client
+        """
+        # Send the required initialise params
+        print(f"[CLIENT] Setup Procedure Starting...")
+        if not self.send(self._interpreter.generate_output('r')):
+            print(f"[CLIENT ERROR] Setup Procedure Failed to Send [r]")
+            return False
+
+        # TODO: Timeout needed?
+        time.sleep(1)
+    
+        if not self._client.send(self._interpreter.generate_output('a')):
+            print(f"[CLIENT ERROR] Setup Procedure Failed to Send [a]")
+            return False
+
+        # TODO: Timeout needed?
+        time.sleep(1)
+        print(f"[CLIENT] Setup Procedure Completed")
+        return True
 
     def connect(self) -> bool:
         self._connected = self._client.connect()

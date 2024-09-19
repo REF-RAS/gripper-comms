@@ -3,10 +3,39 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 
 T = TypeVar("T")
-class Client(ABC, Generic[T]):
+class Interpreter(ABC, Generic[T]):
     def __init__(self):
-        self._connection_status: bool = False
+        pass
 
+    @abstractmethod
+    def verify_output(self, command: T) -> T:
+        """Verifies a given output command based on a known interpreter
+        """
+        pass
+
+    @abstractmethod
+    def generate_output(self, command: T) -> T:
+        """Generates an output command to be sent in known message format 
+        """
+        pass
+
+    @abstractmethod
+    def interpret_input(self, command: T) -> T:
+        """Interprets an input and outputs in known message format 
+        """
+        pass
+
+T = TypeVar("T")
+class Client(ABC, Generic[T]):
+    def __init__(self, interpreter: Interpreter):
+        self._connection_status: bool = False
+        self._interpreter: Interpreter = interpreter
+
+    # -- Standard Methods
+    def get_interpreter(self) -> Interpreter:
+        return self._interpreter
+
+    # -- Properties
     @property
     def _connected(self):
         """The _connection_status property.
@@ -18,6 +47,13 @@ class Client(ABC, Generic[T]):
         """Setting the _connection_status property
         """
         self._connection_status = value
+
+    # -- Abstract Methods
+    @abstractmethod
+    def setup(self) -> T:
+        """Conducts required setup for the client
+        """
+        pass
 
     @abstractmethod
     def send(self, command: T) -> bool:
@@ -43,25 +79,3 @@ class Client(ABC, Generic[T]):
         """
         pass
 
-T = TypeVar("T")
-class Interpreter(ABC, Generic[T]):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def verify_output(self, command: T) -> T:
-        """Verifies a given output command based on a known interpreter
-        """
-        pass
-
-    @abstractmethod
-    def generate_output(self, command: T) -> T:
-        """Generates an output command to be sent in known message format 
-        """
-        pass
-
-    @abstractmethod
-    def interpret_input(self, command: T) -> T:
-        """Interprets an input and outputs in known message format 
-        """
-        pass

@@ -15,7 +15,7 @@ class GripperHandler:
         """
         # -- Prepare main object varibales for use
         # These are parsed in object types for instantiation
-        self._interpreter: Interpreter = None
+        # self._interpreter: Interpreter = None
         self._client: Client = None
         # Prepare comms between threads
         self._input_q: Queue = Queue()
@@ -72,16 +72,17 @@ class GripperHandler:
                     if key == 'termination':
                         # Handle interface temination (i.e., resetup for next connection)
                         print(f"[GRIPPER] Interface has Terminated. Handling Initialisation for new Connections")
-                        self._interface_init()
+                        # NOTE: placeholder for any additional functionaliy as desired
                     elif key == 'command':
                         # check if the gripper is connected or not prior to proceeding
                         if not self._client._connected:
-                            # Reset Procedure
+                            # -- Reset Procedure Actioned by Gripper
                             self.setup()
                         
                         # A command was received from interface, parse and send to gripper
                         # Generate the command to send to the gripper and send said command (now in main thread)
-                        gripper_command = self._interpreter.generate_output(interface_data[key])
+                        # gripper_command = self._interpreter.generate_output(interface_data[key])
+                        gripper_command = self._client.get_interpreter().generate_output(interface_data[key])
                         self._client.send(gripper_command)
                     else:
                         print(f"[GRIPPER ERROR] Unknown Interface State {key}")
@@ -100,10 +101,12 @@ class GripperHandler:
         # The main module for all object creators
         module = importlib.import_module('grippers')
 
-        # Create the interpreter for the gripper client comms
-        self._interpreter = getattr(module, config['interpreter'])()
         # Create the client for the gripper (comms to gripper)
-        self._client = getattr(module, config['client'])()
+        # Create the interpreter for the gripper client comms
+        # self._interpreter = getattr(module, config['interpreter'])()
+        self._client = getattr(module, config['client'])(
+            interpreter=getattr(module, config['interpreter'])()
+        )
 
         # Create the control interface and start its thread
         self._interface_thread = Thread(
@@ -121,48 +124,23 @@ class GripperHandler:
 
     def setup(self):
         """Setup procedure for the gripper
-        TODO: this is currently too custom to the type of gripper, so package into gripper type if possible
         """
-        # TODO: test connection
-        self._client.connect()
         print(f"[GRIPPER] Initialising...")
-        self._client.send(self._interpreter.generate_output('r'))
-        time.sleep(1)
-        self._client.send(self._interpreter.generate_output('a'))
-        time.sleep(1)
-
-        # Setup any initialisation in the interface
-        self._interface_init()
-
-    def _interface_init(self):
-        # NOTE: This may be custom based on type of gripper
-        # -- Send the status of the gripper
-        # Get the gripper's status via the gripper client
-        # gripper_status = self._client_handler.status()
-        # Interpret message into required format for usage in interface
-        # interpreted_gripper_status = self._interpreter_handler.interpret(gripper_status)
-        # Put the interpreted_gripper_status into the interface thread for usage
-        # self._output_q.put(interpreted_gripper_status)
-        pass
+        self._client.connect()
+        self._client.setup()
 
 if __name__ == "__main__":
     # EXPECTED FUNCTIONALITY
     # On run, should instantiate gripper type based on config read
-    # Run a thread to handle connection to the gripper
-    # Run a thread to handle socket connection to Grasshopper
+    # [MAIN] Run a thread to handle connection to the gripper
+    # [NEW THREAD] Run a thread to handle socket connection to Interface 
     # If either thread has a connection issue, the other should run independently
-    # TODO: add any argument parsing if needed
     # Setup the gripper and Object types 
     gripper = GripperHandler()
+    # Initialise gripper through factory method
     gripper.create()
-    # TODO: implement factory read here for these types
-    # gripper.interpreter = RobotiqInterpreter
-    # gripper.client = RobotiqClient
-    # gripper.interface = GrasshopperInterface
-    
     # Setup the Gripper
     gripper.setup()
-
     # Run the Gripper
     gripper.run()
 
