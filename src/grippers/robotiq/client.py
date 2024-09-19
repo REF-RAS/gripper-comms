@@ -56,10 +56,8 @@ class RobotiqClient(Client):
             stopbits=1,
             bytesize=8,
             baudrate=115200,
-            timeout=0.5
+            timeout=0.5,        
         )
-
-        self._command: OutputMsg = OutputMsg()
 
     def connect(self) -> bool:
         self._connected = self._client.connect()
@@ -140,7 +138,6 @@ class RobotiqClient(Client):
         for i in range(0, num_regs) :
             output.append((resp.getRegister(i) & 0xFF00) >> 8)
             output.append(resp.getRegister(i) & 0xFF00)
-
         # Output the result
         return output
 
@@ -217,9 +214,8 @@ class RobotiqInterpreter(Interpreter):
 
         return message
 
-    def generate_output(self, value) -> list:
+    def generate_output(self, value: str) -> list:
         # The following is existing functionality
-        # self._command = OutputMsg()
         if value == 'a':
             self._command.rACT = 1
             self._command.rGTO = 1
@@ -236,7 +232,6 @@ class RobotiqInterpreter(Interpreter):
 
         #If the command entered is a int, assign this value to rPRA
         if value.isnumeric():
-            print(f"[CLIENT] Got numeric as string: {value}")
             self._command.rPR = int(value)
             # Clamping behaviour
             if self._command.rPR > 255:

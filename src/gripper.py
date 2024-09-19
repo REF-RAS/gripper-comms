@@ -78,6 +78,7 @@ class GripperHandler:
                         if not self._client._connected:
                             # Reset Procedure
                             self.setup()
+                        
                         # A command was received from interface, parse and send to gripper
                         # Generate the command to send to the gripper and send said command (now in main thread)
                         gripper_command = self._interpreter.generate_output(interface_data[key])
@@ -119,6 +120,9 @@ class GripperHandler:
         self._interface_thread.name = "Thread-Control-Interface"
 
     def setup(self):
+        """Setup procedure for the gripper
+        TODO: this is currently too custom to the type of gripper, so package into gripper type if possible
+        """
         # TODO: test connection
         self._client.connect()
         print(f"[GRIPPER] Initialising...")
