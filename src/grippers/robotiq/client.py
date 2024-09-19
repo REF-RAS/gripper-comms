@@ -59,6 +59,8 @@ class RobotiqClient(Client):
             timeout=0.5
         )
 
+        self._command: OutputMsg = OutputMsg()
+
     def connect(self) -> bool:
         self._connected = self._client.connect()
         print(f"[CLIENT CONNECTION] Status is {self._connected}")
@@ -103,7 +105,7 @@ class RobotiqClient(Client):
             self._connected = False
             return False
 
-    def get_status(self, num_bytes: int = 0) -> list:
+    def get_status(self, num_bytes: int = 6) -> list:
         """Gets the status from a connected Robotiq Gripper 
         """
         if num_bytes is None or num_bytes <= 0:
@@ -133,6 +135,7 @@ class RobotiqClient(Client):
 
         # Setup output and fill with bytes in correct order
         # Two byte extraction
+        print(f"[CLIENT] GOT: {resp}")
         output: list = []
         for i in range(0, num_regs) :
             output.append((resp.getRegister(i) & 0xFF00) >> 8)
@@ -145,6 +148,7 @@ class RobotiqInterpreter(Interpreter):
     def __init__(self):
         super().__init__()
         print(f"[INTERPRETER] Robotiq Type Instantiated")
+        self._command: OutputMsg = OutputMsg()
 
     def verify_output(self, command: OutputMsg) -> OutputMsg:
         """Confirms if the output message is within required bounds
@@ -215,51 +219,53 @@ class RobotiqInterpreter(Interpreter):
 
     def generate_output(self, value) -> list:
         # The following is existing functionality
-        command = OutputMsg()
+        # self._command = OutputMsg()
         if value == 'a':
-            command.rACT = 1
-            command.rGTO = 1
-            command.rSP  = 255
-            command.rFR  = 150
+            self._command.rACT = 1
+            self._command.rGTO = 1
+            self._command.rSP  = 255
+            self._command.rFR  = 150
         elif value == 'r':
-            command.rACT = 0
+            self._command.rACT = 0
 
         if value == 'c':
-            command.rPR = 255
+            self._command.rPR = 255
 
         if value == 'o':
-            command.rPR = 0   
+            self._command.rPR = 0   
 
         #If the command entered is a int, assign this value to rPRA
-        if isinstance(value, int):
-            command.rPR = int(value)
+        if value.isnumeric():
+            print(f"[CLIENT] Got numeric as string: {value}")
+            self._command.rPR = int(value)
             # Clamping behaviour
-            if command.rPR > 255:
-                command.rPR = 255
-            if command.rPR < 0:
-                command.rPR = 0
+            if self._command.rPR > 255:
+                self._command.rPR = 255
+            if self._command.rPR < 0:
+                self._command.rPR = 0
             
         if value == 'f':
-            command.rSP += 25
-            if command.rSP > 255:
-                command.rSP = 255
+            self._command.rSP += 25
+            if self._command.rSP > 255:
+                self._command.rSP = 255
                 
         if value == 'l':
-            command.rSP -= 25
-            if command.rSP < 0:
-                command.rSP = 0
+            self._command.rSP -= 25
+            if self._command.rSP < 0:
+                self._command.rSP = 0
 
         if value == 'i':
-            command.rFR += 25
-            if command.rFR > 255:
-                command.rFR = 255
+            self._command.rFR += 25
+            if self._command.rFR > 255:
+                self._command.rFR = 255
                 
         if value == 'd':
-            command.rFR -= 25
-            if command.rFR < 0:
-                command.rFR = 0
+            self._command.rFR -= 25
+            if self._command.rFR < 0:
+                self._command.rFR = 0
 
-        output = self.refresh_output(command)
+        output = self.refresh_output(self._command)
+        print(f"[CLIENT] Generated Output: {output} | value: {value}")
         return output
 
 

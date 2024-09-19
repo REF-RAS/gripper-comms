@@ -74,6 +74,12 @@ class GripperHandler:
                         print(f"[GRIPPER] Interface has Terminated. Handling Initialisation for new Connections")
                         self._interface_init()
                     elif key == 'command':
+                        # check if the gripper is connected or not prior to proceeding
+                        if not self._client._connected:
+                            # Attempt connection
+                            # self._client.connect()
+                            # Reset Procedure
+                            self.setup()
                         # A command was received from interface, parse and send to gripper
                         # Get the gripper status here, we can send this back to the interface thread if required
                         self._client.get_status()
@@ -120,6 +126,12 @@ class GripperHandler:
     def setup(self):
         # TODO: test connection
         self._client.connect()
+        
+        # self._client.get_status()
+        self._client.send(self._interpreter.generate_output('r'))
+        time.sleep(1)
+        self._client.send(self._interpreter.generate_output('a'))
+        time.sleep(1)
 
         # Setup any initialisation in the interface
         self._interface_init()

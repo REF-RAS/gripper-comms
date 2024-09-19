@@ -7,10 +7,10 @@ async def test_client():
     print(f"WebSocket Client Test")
     url = "ws://localhost:8001"
     async with websockets.connect(url) as ws:
-        msg = 2
+        msg = 0
         await ws.send(f"{msg}")
-        time.sleep(2)
-        msg = 3
+        # time.sleep(2)
+        msg = 255
         await ws.send(f"{msg}")
 
         # Stay alive until self termination
