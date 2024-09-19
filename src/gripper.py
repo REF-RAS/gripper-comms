@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+# -- Imports from Base Definition and Custom Extensions
 from base import *
 from grippers import *
+# -- General imports
 from threading import Thread, Lock
 from queue import Queue
-import time, yaml, os, importlib
+import time, yaml, os, importlib, signal, sys
 
 # Set the path to be the root of this package
 __path__ = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -13,11 +15,13 @@ class GripperHandler:
     def __init__(self):
         """Constructor
         """
+        # -- Prepare Signals
+        signal.signal(signal.SIGINT, self._exit_gracefully)
+        signal.signal(signal.SIGTERM, self._exit_gracefully)
         # -- Prepare main object varibales for use
-        # These are parsed in object types for instantiation
-        # self._interpreter: Interpreter = None
+        # The main client (gripper) object
         self._client: Client = None
-        # Prepare comms between threads
+        # Prepare comms between threads 
         self._input_q: Queue = Queue()
         self._output_q: Queue = Queue()
         self._lock: Lock = Lock()
@@ -29,7 +33,15 @@ class GripperHandler:
     def __del__(self):
         """Destructor
         """
+        print(f"[GRIPPER] Destructor Terminating Gracefully")
         self._stop_threads()
+
+    def _exit_gracefully(self, signum, frame):
+        """Signal exit handling
+        """
+        print(f"[GRIPPER] Terminating Gracefully")
+        self._stop_threads()
+        sys.exit(0)
 
     # -- Private Methods (or abstraction methods)
     def _run_check_method(self):
@@ -44,6 +56,7 @@ class GripperHandler:
         with self._lock:
             self._interface_connection = value
 
+    # TODO: If desired
     def _client_connection_check(self): 
         # attempt to connect to client
         # If client is connected, update main thread
@@ -63,7 +76,7 @@ class GripperHandler:
     def run(self):
         while True:
             try:
-                # Blocking wait for interface data
+                # Blocking wait for interface data from interface thread implementation
                 print(f"[GRIPPER] Waiting for Interface Data")
                 interface_data = self._input_q.get(block=True)
                 print(f"[GRIPPER] Interface Data is {interface_data}")
@@ -76,12 +89,10 @@ class GripperHandler:
                     elif key == 'command':
                         # check if the gripper is connected or not prior to proceeding
                         if not self._client._connected:
-                            # -- Reset Procedure Actioned by Gripper
+                            # Reset Procedure Actioned by Gripper
                             self.setup()
                         
-                        # A command was received from interface, parse and send to gripper
                         # Generate the command to send to the gripper and send said command (now in main thread)
-                        # gripper_command = self._interpreter.generate_output(interface_data[key])
                         gripper_command = self._client.get_interpreter().generate_output(interface_data[key])
                         self._client.send(gripper_command)
                     else:
@@ -91,7 +102,8 @@ class GripperHandler:
             except KeyboardInterrupt:
                 break
 
-        self._stop_threads()
+        # If here, exit
+        self._exit_gracefully()
 
     def create(self):
         # Read config and extract names
@@ -132,8 +144,8 @@ class GripperHandler:
 if __name__ == "__main__":
     # EXPECTED FUNCTIONALITY
     # On run, should instantiate gripper type based on config read
-    # [MAIN] Run a thread to handle connection to the gripper
-    # [NEW THREAD] Run a thread to handle socket connection to Interface 
+    # [MAIN THREAD] Run a thread to handle connection to the gripper (client)
+    # [NEW THREAD] Run a thread to handle connection to Interface (interface) 
     # If either thread has a connection issue, the other should run independently
     # Setup the gripper and Object types 
     gripper = GripperHandler()
@@ -143,11 +155,3 @@ if __name__ == "__main__":
     gripper.setup()
     # Run the Gripper
     gripper.run()
-
-
-
-
-
-
-
-

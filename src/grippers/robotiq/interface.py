@@ -6,7 +6,6 @@ from threading import Thread
 from queue import Queue, Empty
 from typing import Callable 
 from base.interface import Interface 
-from grippers.robotiq.msg import InputMsg
 
 class GrasshopperInterface(Interface):
     def __init__(
