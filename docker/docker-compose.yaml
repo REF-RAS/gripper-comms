@@ -1,17 +1,20 @@
 services:
-  gripper-comms:
+  default:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        USER: ${USER}
     image: gripper-comms
     container_name: docker-gripper-comms
     stdin_open: true
     tty: true
-    privileged: true
     network_mode: host
+    restart: always
     command: python3 src/gripper.py
     volumes:
-      - ../src:/home/${USER}/src:rw
-      - ../config:/home/${USER}/config:rw
+      - ../src:/home/ubuntu/src:rw
+      - ../config:/home/ubuntu/config:rw
+  default-windows:
+    extends: default
+    build: 
+      context: .
+      dockerfile: Dockerfile.windows

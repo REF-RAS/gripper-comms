@@ -20,8 +20,11 @@ The package can also be dockerised (for running in the background) with the foll
 # Clone the package to a nominated directory (assumes home directory)
 git clone git@github.com:DasGuna/gripper-comms.git  
 
-# Run the docker compose command to build the image 
-docker compose -f gripper-comms/docker/docker-compose.yaml build gripper-comms
+# LINUX: Run the docker compose command to build the image  
+docker compose -f gripper-comms/docker/docker-compose.yaml build default 
+
+# WINDOWS: Run the docker compose command to build the image  
+docker compose -f gripper-comms/docker/docker-compose.yaml build default-windows
 ```
 
 ## Configuration and Usage
@@ -42,8 +45,9 @@ To run the package, simply run the following command(s) based on your preferred 
 python gripper-comms/src/gripper.py
 
 # If running as a container (having already built as per the above)
-# Run the docker compose command to bring up the container (to run in the background)
-docker compose -f gripper-comms/docker/docker-compose.yaml up gripper-comms --detach
+# [LINUX/WINDOWS] Run the docker compose command to bring up the container (to run in the background)
+# NOTE: the restart always flag is enabled by default so the container will start up on boot
+docker compose -f gripper-comms/docker/docker-compose.yaml up default --detach
 ```
 
 ## Contribution
