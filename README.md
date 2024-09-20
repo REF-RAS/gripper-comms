@@ -27,10 +27,10 @@ docker compose -f gripper-comms/docker/docker-compose.yaml build gripper-comms
 ## Configuration and Usage
 The design of the package is based on the following three (3) main abstract classes (located in [src/base](./src/base/)):
 - ***The Client Object***: which handles communication to the client gripper of choice.  
-- ***The Interpreter Object***: which handles translation/interpretation of input/output messages between a user interface and the client gripper.
+- ***The Interpreter Object***: which handles translation/interpretation of input/output messages between a user interface and the client gripper. This is defined inside the [src/base/client.py](./src/base/client.py) module.
 - ***The Interface Object***: which handles user communication to the gripper application from some means.
 
-The intention with the above was to be as general enough such that the main user entry point for the application ([gripper.py](./src/gripper.py)) remains unchanged. Users can contribute and add custom functionality based on the three classes above, which can be saved in [src/grippers](./src/grippers/) as a folder containing children classes of the defined parent abstract classes. 
+The intention with the above was to be as general as possible such that the main user entry point for the application ([gripper.py](./src/gripper.py)) remains unchanged. Users can contribute and add custom functionality based on the three classes above, which can be saved in [src/grippers](./src/grippers/) as a folder containing children classes of the defined parent abstract classes. 
 
 As an example, this package includes a [robotiq](./src/grippers/robotiq/) extension built upon previous work (see the Acknowledgements section), which defines custom functionality to the three (3) main parent abstract classes. New implementations (or extentions) can be added in a similar way. 
 

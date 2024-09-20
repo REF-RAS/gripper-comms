@@ -1,7 +1,7 @@
-from grippers.robotiq.client import RobotiqClient, RobotiqInterpreter
+from grippers.robotiq.client import RobotiqModbusSerialClient, RobotiqInterpreter
 from grippers.robotiq.interface import GrasshopperInterface
 __all__ = [
-    'RobotiqClient', 
+    'RobotiqModbusSerialClient', 
     'GrasshopperInterface', 
     'RobotiqInterpreter'
 ]

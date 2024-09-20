@@ -65,12 +65,12 @@ class OutputMsg():
     rFR: int = 0
 
 # --- Client Definition
-class RobotiqClient(Client):
+class RobotiqModbusSerialClient(Client):
     def __init__(self, interpreter: Interpreter):
         """Robotiq Client Initialiser
         """
         super().__init__(interpreter=interpreter)
-        print(f"[CLIENT] Robotiq Type Instantiated")
+        print(f"[CLIENT] Robotiq ModbusSerialClient Type Instantiated")
         # TODO: config read in to get these params
         self._client = ModbusSerialClient(
             framer='rtu',
