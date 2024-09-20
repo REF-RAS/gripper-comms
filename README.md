@@ -48,6 +48,9 @@ python gripper-comms/src/gripper.py
 # [LINUX/WINDOWS] Run the docker compose command to bring up the container (to run in the background)
 # NOTE: the restart always flag is enabled by default so the container will start up on boot
 docker compose -f gripper-comms/docker/docker-compose.yaml up default --detach
+
+# If you wish to view the container logs when running headless - use the below command
+docker logs docker-gripper-comms -f -n 100
 ```
 
 ## Contribution
