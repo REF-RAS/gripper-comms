@@ -9,7 +9,7 @@ This package allows for the communication between a host PC and a configured gri
 The package can be installed locally (for manual usage) with the following instructions:
 ```bash
 # Clone the package to a nominated directory (assumes home directory)
-git clone git@github.com:DasGuna/gripper-comms.git  
+git clone https://github.com/REF-RAS/gripper-comms.git  
 
 # Enter the package and install required packages
 pip install -r gripper-comms/requirements.txt
@@ -18,7 +18,7 @@ pip install -r gripper-comms/requirements.txt
 The package can also be dockerised (for running in the background) with the following:
 ```bash
 # Clone the package to a nominated directory (assumes home directory)
-git clone git@github.com:DasGuna/gripper-comms.git  
+git clone https://github.com/REF-RAS/gripper-comms.git  
 
 # LINUX: Run the docker compose command to build the image  
 docker compose -f gripper-comms/docker/docker-compose.yaml build default 
