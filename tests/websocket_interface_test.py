@@ -4,7 +4,7 @@ import asyncio
 import time
 
 async def test_client():
-    print(f"WebSocket Client Test")
+    print(f"WebSocket Interface Test (if applicable)")
     url = "ws://localhost:8001"
     async with websockets.connect(url) as ws:
         msg = 50

@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# Copyright 2024 - Dasun Gunasinghe
+# Research Engineering Facility, Queensland University of Technology (QUT)
+__author__ = 'Dasun Gunasinghe'
+__email__ = 'robotics.ref@qut.edu.au'
+
 # -- Imports from Base Definition and Custom Extensions
 from base import *
 from grippers import *
@@ -115,7 +120,6 @@ class GripperHandler:
 
         # Create the client for the gripper (comms to gripper)
         # Create the interpreter for the gripper client comms
-        # self._interpreter = getattr(module, config['interpreter'])()
         self._client = getattr(module, config['client'])(
             interpreter=getattr(module, config['interpreter'])()
         )

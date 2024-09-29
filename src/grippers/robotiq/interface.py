@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# Copyright 2024 - Dasun Gunasinghe
+# Research Engineering Facility, Queensland University of Technology (QUT)
+__author__ = 'Dasun Gunasinghe'
+__email__ = 'robotics.ref@qut.edu.au'
+
 import asyncio
 import websockets
 import os
